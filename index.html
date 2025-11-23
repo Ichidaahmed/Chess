@@ -5,506 +5,94 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>شطرنج المحترفين</title>
     
-    <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboard2@0.5.0/dist/chessboard2.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
-    <script src="https://unpkg.com/@chrisoakman/chessboard2@0.5.0/dist/chessboard2.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
-    <style>
-        :root {
-            --bg-dark: #1a1a2e;
-            --bg-light: #16213e;
-            --accent: #0f3460;
-            --highlight: #e94560;
-            --text-main: #ffffff;
-            --legal-move: rgba(20, 255, 0, 0.5);
-        }
-        
-        body {
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            overflow: hidden; /* يمنع تحرك الصفحة */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            touch-action: none; /* يمنع التكبير والتصغير باللمس */
-        }
-
-        .container {
-            width: 100%;
-            max-width: 500px;
-            height: 100vh;
-            background-color: var(--bg-light);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
-
-        .page {
-            display: none;
-            height: 100%;
-            padding: 20px;
-            box-sizing: border-box;
-            overflow-y: auto;
-        }
-        .page.active { display: block; }
-
-        /* تصميم البورد */
-        #board {
-            width: 100%;
-            touch-action: none; /* مهم جداً لحركة القطع السلسة */
-        }
-
-        /* تمييز الحركات القانونية */
-        .highlight-legal {
-            box-shadow: inset 0 0 3px 3px var(--legal-move);
-            border-radius: 50%;
-        }
-        
-        /* نقطة في وسط المربع للحركة المتاحة */
-        .legal-dot {
-            background: rgba(0, 255, 0, 0.4);
-            width: 30%;
-            height: 30%;
-            border-radius: 50%;
-            position: absolute;
-            top: 35%;
-            left: 35%;
-            pointer-events: none;
-        }
-
-        /* نافذة الانتظار فوق البورد */
-        .overlay-waiting {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.85);
-            z-index: 100;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            text-align: center;
-        }
-        
-        .room-code {
-            font-size: 3rem;
-            font-weight: bold;
-            color: var(--highlight);
-            letter-spacing: 5px;
-            margin: 20px 0;
-            font-family: monospace;
-            background: #000;
-            padding: 10px 30px;
-            border-radius: 10px;
-            border: 2px dashed var(--highlight);
-        }
-
-        /* معلومات اللاعبين والتوقيت */
-        .game-ui {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            height: 100%;
-        }
-
-        .player-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            background: rgba(255,255,255,0.05);
-            margin: 5px 0;
-            border-radius: 8px;
-        }
-
-        .timer {
-            font-family: monospace;
-            font-size: 1.5rem;
-            font-weight: bold;
-            background: #000;
-            color: #fff;
-            padding: 5px 10px;
-            border-radius: 4px;
-            min-width: 80px;
-            text-align: center;
-        }
-
-        /* الأزرار */
-        .btn {
-            width: 100%;
-            padding: 15px;
-            margin: 10px 0;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            color: white;
-            background-color: var(--accent);
-        }
-        .btn-danger { background-color: var(--highlight); }
-
-        /* خيارات الوقت */
-        .time-selector {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .time-btn {
-            flex: 1;
-            padding: 10px;
-            background: var(--bg-dark);
-            border: 1px solid var(--accent);
-            color: #888;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .time-btn.selected {
-            background: var(--highlight);
-            color: white;
-            border-color: var(--highlight);
-        }
-
-    </style>
+    
+    <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboard2@0.5.0/dist/chessboard2.min.css">
+    
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="container">
     
     <div id="setup-page" class="page active">
-        <h1 style="text-align: center; color: var(--highlight);">شطرنج أونلاين</h1>
+        <div class="logo-area">
+            <i class="fas fa-chess-king fa-3x" style="color: var(--highlight);"></i>
+            <h1>شطرنج أونلاين</h1>
+        </div>
         
-        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; margin-top: 20px;">
-            <h3>⏱ اختر وقت المباراة</h3>
+        <div class="card">
+            <h3><i class="fas fa-stopwatch"></i> اختر وقت المباراة</h3>
             <div class="time-selector">
-                <button class="time-btn selected" onclick="selectTime(1)" id="t-1">1 دقيقة</button>
-                <button class="time-btn" onclick="selectTime(5)" id="t-5">5 دقائق</button>
-                <button class="time-btn" onclick="selectTime(10)" id="t-10">10 دقائق</button>
-                <button class="time-btn" onclick="selectTime(30)" id="t-30">30 دقيقة</button>
+                <button class="time-btn selected" onclick="selectTime(1)" id="t-1">1 د</button>
+                <button class="time-btn" onclick="selectTime(5)" id="t-5">5 د</button>
+                <button class="time-btn" onclick="selectTime(10)" id="t-10">10 د</button>
+                <button class="time-btn" onclick="selectTime(30)" id="t-30">30 د</button>
             </div>
-            <button class="btn" onclick="createGame()">إنشاء غرفة واللعب</button>
+            <button class="btn main-btn" onclick="createGame()">إنشاء غرفة واللعب</button>
         </div>
 
-        <div style="margin-top: 30px; border-top: 1px solid #333; padding-top: 20px;">
-            <h3>🔗 الانضمام لصديق</h3>
-            <input type="text" id="join-code" placeholder="أدخل كود الغرفة" style="width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 5px; border: none; text-align: center; font-size: 1.2rem;">
-            <button class="btn" onclick="joinGame()">دخول المباراة</button>
+        <div class="divider">
+            <span>أو</span>
+        </div>
+
+        <div class="card">
+            <h3><i class="fas fa-handshake"></i> الانضمام لصديق</h3>
+            <input type="text" id="join-code" placeholder="أدخل كود الغرفة هنا">
+            <button class="btn secondary-btn" onclick="joinGame()">دخول المباراة</button>
         </div>
     </div>
 
     <div id="game-page" class="page">
         
-        <div id="waiting-overlay" class="overlay-waiting" style="display: none;">
-            <h2>في انتظار الخصم...</h2>
-            <p>شارك هذا الكود مع صديقك</p>
-            <div class="room-code" id="display-code">---</div>
-            <button class="btn btn-danger" style="width: auto; padding: 10px 30px;" onclick="copyCode()">نسخ الكود</button>
-            <p style="margin-top: 20px; font-size: 0.9rem; color: #aaa;">ستبدأ اللعبة تلقائياً عند دخول الخصم</p>
+        <div id="waiting-overlay" class="overlay-waiting">
+            <div class="waiting-content">
+                <h2>في انتظار الخصم...</h2>
+                <p>شارك هذا الكود:</p>
+                <div class="room-code" id="display-code">---</div>
+                <button class="btn copy-btn" onclick="copyCode()"><i class="fas fa-copy"></i> نسخ الكود</button>
+                <div class="loader"></div>
+            </div>
         </div>
 
         <div class="game-ui">
-            <div class="player-bar">
-                <div><i class="fas fa-user"></i> <span id="opponent-status">الخصم</span></div>
+            <div class="player-bar top-bar">
+                <div class="user-info">
+                    <i class="fas fa-user"></i> 
+                    <span id="opponent-status">الخصم</span>
+                </div>
                 <div class="timer" id="timer-opponent">00:00</div>
             </div>
 
-            <div id="board"></div>
+            <div class="board-container">
+                <div id="board"></div>
+            </div>
 
-            <div class="player-bar">
-                <div><i class="fas fa-user-circle"></i> <span id="my-name">أنت</span></div>
+            <div class="player-bar bottom-bar">
+                <div class="user-info">
+                    <i class="fas fa-user-circle"></i> 
+                    <span id="my-name">أنت</span>
+                </div>
                 <div class="timer" id="timer-self">00:00</div>
             </div>
             
-            <div id="status-msg" style="text-align: center; margin-top: 10px; color: var(--highlight);"></div>
-            <button class="btn btn-danger" style="margin-top: auto;" onclick="location.reload()">خروج</button>
+            <div id="status-msg" class="status-text"></div>
+            
+            <button class="btn exit-btn" onclick="location.reload()">
+                <i class="fas fa-sign-out-alt"></i> خروج
+            </button>
         </div>
     </div>
 
 </div>
 
-<script>
-    // 1. إعدادات Firebase (تم التثبيت)
-    const firebaseConfig = {
-        apiKey: "AIzaSyBvWGwTwzWztUystFa_PiASBM1_zKYljgE",
-        authDomain: "gunter-9588f.firebaseapp.com",
-        projectId: "gunter-9588f",
-        storageBucket: "gunter-9588f.appspot.com",
-        databaseURL: "https://gunter-9588f-default-rtdb.europe-west1.firebasedatabase.app"
-    };
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+<script src="https://unpkg.com/@chrisoakman/chessboard2@0.5.0/dist/chessboard2.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+<script src="script.js"></script>
 
-    // 2. متغيرات النظام
-    let game = new Chess();
-    let board = null;
-    let roomId = null;
-    let myColor = 'white';
-    let selectedMinutes = 1;
-    let isGameActive = false;
-    let timerInterval = null;
-    let localTimers = { white: 60, black: 60 };
-
-    // 3. اختيار الوقت
-    function selectTime(mins) {
-        selectedMinutes = mins;
-        document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected'));
-        document.getElementById('t-' + mins).classList.add('selected');
-    }
-
-    // 4. إنشاء الغرفة (المنطق الجديد: ادخل مباشرة للبورد)
-    function createGame() {
-        roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
-        myColor = 'white';
-        
-        const initialData = {
-            fen: game.fen(),
-            turn: 'white',
-            status: 'waiting', // حالة انتظار
-            timeLimit: selectedMinutes * 60,
-            timers: { white: selectedMinutes * 60, black: selectedMinutes * 60 },
-            lastMoveTime: Date.now(),
-            players: { white: true, black: false }
-        };
-
-        // حفظ في قاعدة البيانات
-        db.ref('rooms/' + roomId).set(initialData).then(() => {
-            // إظهار البورد فوراً
-            setupBoard('white');
-            showPage('game-page');
-            
-            // إظهار طبقة الانتظار
-            document.getElementById('waiting-overlay').style.display = 'flex';
-            document.getElementById('display-code').innerText = roomId;
-            
-            // بدء الاستماع
-            listenToRoom();
-        });
-    }
-
-    // 5. الانضمام للغرفة (إصلاح مشكلة عدم التوجيه)
-    function joinGame() {
-        const code = document.getElementById('join-code').value.trim().toUpperCase();
-        if (!code) return alert('الرجاء إدخال الكود');
-
-        db.ref('rooms/' + code).once('value').then(snapshot => {
-            if (!snapshot.exists()) return alert('الغرفة غير موجودة');
-            const data = snapshot.val();
-            if (data.players.black) return alert('الغرفة ممتلئة بالفعل');
-
-            roomId = code;
-            myColor = 'black';
-
-            // تحديث البيانات وبدء اللعب
-            db.ref('rooms/' + roomId).update({
-                'players/black': true,
-                'status': 'active', // تغيير الحالة لنشط
-                'lastMoveTime': Date.now()
-            }).then(() => {
-                // إخفاء طبقة الانتظار (لأننا دخلنا للتو)
-                document.getElementById('waiting-overlay').style.display = 'none';
-                
-                // إعداد البورد
-                setupBoard('black');
-                showPage('game-page');
-                
-                // بدء الاستماع
-                listenToRoom();
-            });
-        });
-    }
-
-    // 6. إعداد البورد وإظهار الحركات القانونية
-    function setupBoard(orientation) {
-        if (board) board.destroy();
-        
-        game = new Chess(); // إعادة تصفير اللعبة
-        
-        const config = {
-            draggable: true,
-            position: 'start',
-            orientation: orientation,
-            onDragStart: onDragStart,
-            onDrop: onDrop,
-            onSnapEnd: () => board.position(game.fen())
-        };
-        
-        board = Chessboard2('board', config);
-        window.onresize = board.resize;
-
-        // منع تحرك الصفحة عند لمس البورد (للجوال)
-        document.getElementById('board').addEventListener('touchmove', function(e) {
-            e.preventDefault();
-        }, { passive: false });
-    }
-
-    // 7. الاستماع المباشر للتغييرات
-    function listenToRoom() {
-        db.ref('rooms/' + roomId).on('value', snapshot => {
-            const data = snapshot.val();
-            if (!data) return;
-
-            // أ. إذا انضم الخصم وأنا صاحب الغرفة
-            if (data.status === 'active' && myColor === 'white') {
-                document.getElementById('waiting-overlay').style.display = 'none';
-                document.getElementById('opponent-status').innerText = 'متصل';
-                document.getElementById('opponent-status').style.color = '#2ecc71';
-                if (!isGameActive) {
-                    isGameActive = true;
-                    startLocalTimer();
-                }
-            } else if (myColor === 'black') {
-                 if (!isGameActive) {
-                    isGameActive = true;
-                    startLocalTimer();
-                 }
-            }
-
-            // ب. تحديث البورد إذا تحرك الخصم
-            if (data.fen !== game.fen()) {
-                game.load(data.fen);
-                board.position(data.fen);
-                updateStatus();
-            }
-
-            // ج. تحديث التوقيت
-            localTimers = data.timers;
-            updateTimerDisplay();
-        });
-    }
-
-    // 8. منطق الحركة وإظهار التلميحات (Legal Moves)
-    function removeHighlights() {
-        $('.legal-dot').remove();
-    }
-
-    function onDragStart(source, piece) {
-        if (!isGameActive) return false;
-        if (game.game_over()) return false;
-
-        // السماح فقط بتحريك قطعك
-        if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
-            (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
-            return false;
-        }
-        if ((game.turn() === 'w' && myColor === 'black') ||
-            (game.turn() === 'b' && myColor === 'white')) {
-            return false;
-        }
-
-        // إظهار الحركات المتاحة
-        const moves = game.moves({
-            square: source,
-            verbose: true
-        });
-
-        if (moves.length === 0) return;
-
-        // رسم نقطة خضراء على كل مربع متاح
-        moves.forEach(function(move) {
-            const squareEl = document.querySelector(`.square-${move.to}`);
-            if (squareEl) {
-                const dot = document.createElement('div');
-                dot.className = 'legal-dot';
-                squareEl.appendChild(dot);
-            }
-        });
-    }
-
-    function onDrop(source, target) {
-        removeHighlights(); // إخفاء النقاط
-
-        const move = game.move({
-            from: source,
-            to: target,
-            promotion: 'q'
-        });
-
-        if (move === null) return 'snapback';
-
-        // إرسال الحركة للسيرفر
-        updateServerAfterMove(move);
-        updateStatus();
-    }
-
-    // 9. تحديث السيرفر بعد الحركة
-    function updateServerAfterMove(move) {
-        const now = Date.now();
-        db.ref('rooms/' + roomId).transaction(room => {
-            if (room) {
-                // حساب الوقت المستغرق
-                const elapsed = Math.floor((now - room.lastMoveTime) / 1000);
-                const turnColor = move.color === 'w' ? 'white' : 'black';
-                
-                // خصم الوقت
-                const newTime = Math.max(0, room.timers[turnColor] - elapsed);
-                
-                room.fen = game.fen();
-                room.turn = game.turn() === 'w' ? 'white' : 'black'; // تبديل الدور
-                room.lastMoveTime = now;
-                room.timers[turnColor] = newTime;
-                return room;
-            }
-        });
-    }
-
-    // 10. التوقيت المحلي (للعرض السلس)
-    function startLocalTimer() {
-        if (timerInterval) clearInterval(timerInterval);
-        timerInterval = setInterval(() => {
-            if (game.game_over()) return;
-
-            const turn = game.turn() === 'w' ? 'white' : 'black';
-            if (localTimers[turn] > 0) {
-                localTimers[turn]--;
-                updateTimerDisplay();
-            } else {
-                clearInterval(timerInterval);
-                alert('انتهى الوقت!');
-            }
-        }, 1000);
-    }
-
-    function updateTimerDisplay() {
-        const format = t => {
-            const m = Math.floor(t / 60);
-            const s = Math.floor(t % 60);
-            return `${m}:${s.toString().padStart(2, '0')}`;
-        };
-
-        document.getElementById('timer-self').innerText = format(localTimers[myColor]);
-        const oppColor = myColor === 'white' ? 'black' : 'white';
-        document.getElementById('timer-opponent').innerText = format(localTimers[oppColor]);
-    }
-
-    // دوال مساعدة
-    function showPage(id) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-    }
-    
-    function copyCode() {
-        navigator.clipboard.writeText(roomId).then(() => alert('تم نسخ الكود!'));
-    }
-    
-    function updateStatus() {
-        let status = '';
-        if (game.in_checkmate()) status = 'كش مات! انتهت اللعبة';
-        else if (game.in_draw()) status = 'تعادل';
-        else if (game.in_check()) status = 'كش ملك!';
-        else status = ''; // لا داعي لإظهار شيء في الوضع العادي
-        
-        document.getElementById('status-msg').innerText = status;
-    }
-
-</script>
 </body>
 </html>
