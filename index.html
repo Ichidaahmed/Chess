@@ -3,521 +3,528 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لعبة شطرنج أونلاين - 1v1</title>
+    <title>لعبة شطرنج المحترفين</title>
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboard2@0.5.0/dist/chessboard2.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <script src="https://unpkg.com/@chrisoakman/chessboard2@0.5.0/dist/chessboard2.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
     <style>
         :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #3498db;
-            --accent-color: #e74c3c;
-            --light-color: #ecf0f1;
-            --dark-color: #2c3e50;
-            --success-color: #2ecc71;
-            --warning-color: #f39c12;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --bg-dark: #1a1a2e;
+            --bg-light: #16213e;
+            --accent: #0f3460;
+            --highlight: #e94560;
+            --text-main: #ffffff;
         }
         
         body {
-            background-color: #f5f5f5;
-            color: var(--dark-color);
-            line-height: 1.6;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
             padding: 20px;
+            display: flex;
+            justify-content: center;
             min-height: 100vh;
         }
-        
+
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        
-        header {
-            text-align: center;
-            padding: 20px 0;
-            background-color: var(--primary-color);
-            color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-        }
-        
-        .subtitle {
-            font-size: 1.2rem;
-            opacity: 0.9;
-        }
-        
-        .page {
-            display: none;
-            background-color: white;
-            border-radius: 10px;
-            padding: 30px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            min-height: 500px;
-        }
-        
-        .page.active {
-            display: block;
-        }
-        
-        .waiting-room { text-align: center; }
-        
-        .player-status {
-            display: flex;
-            justify-content: space-around;
-            margin: 30px 0;
-        }
-        
-        .player {
+            width: 100%;
+            max-width: 600px;
+            background-color: var(--bg-light);
             padding: 20px;
-            border-radius: 10px;
-            background-color: var(--light-color);
-            min-width: 150px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
-        
-        .player.connected {
-            background-color: var(--success-color);
-            color: white;
+
+        h1, h2, h3 { text-align: center; margin-bottom: 20px; color: var(--highlight); }
+
+        .page { display: none; animation: fadeIn 0.5s; }
+        .page.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        
-        .timer {
-            font-size: 2rem;
+
+        /* تنسيق الأزرار والإدخال */
+        .btn {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
             font-weight: bold;
-            margin: 20px 0;
-            color: var(--primary-color);
+            cursor: pointer;
+            transition: 0.3s;
+            color: white;
+            background-color: var(--accent);
+        }
+        .btn:hover { background-color: #1a5c9e; transform: scale(1.02); }
+        .btn-danger { background-color: var(--highlight); }
+        .btn-danger:hover { background-color: #c0354c; }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 2px solid var(--accent);
+            background: #0f3460;
+            color: white;
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        /* خيارات الوقت */
+        .time-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
         }
         
+        .time-option {
+            background: var(--bg-dark);
+            border: 2px solid var(--accent);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        
+        .time-option.selected {
+            background: var(--highlight);
+            border-color: var(--highlight);
+        }
+        
+        .time-option i { display: block; font-size: 1.5rem; margin-bottom: 5px; }
+
+        /* لوحة الشطرنج */
         #board {
             width: 100%;
-            max-width: 500px;
-            margin: 0 auto;
+            margin: 20px 0;
+            border: 5px solid #4a4a4a;
+            border-radius: 4px;
         }
-        
-        .game-info {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: var(--light-color);
-            border-radius: 8px;
-            text-align: center;
-        }
-        
-        .room-info {
+
+        .game-header {
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            margin-top: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+            background: rgba(0,0,0,0.2);
             padding: 10px;
-            background-color: #e8f4fd;
             border-radius: 8px;
         }
-        
-        .room-id {
+
+        .timer {
+            font-family: 'Courier New', monospace;
+            font-size: 1.5rem;
             font-weight: bold;
-            font-size: 1.1rem;
-        }
-        
-        .btn {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: var(--secondary-color);
-            color: white;
-            border: none;
+            background: black;
+            color: red;
+            padding: 5px 15px;
             border-radius: 5px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: background-color 0.3s;
-            text-align: center;
-            margin: 5px;
+            border: 1px solid #333;
         }
-        
-        .btn:hover { background-color: #2980b9; }
-        
-        .btn-success { background-color: var(--success-color); }
-        .btn-success:hover { background-color: #27ae60; }
-        
-        .btn-warning { background-color: var(--warning-color); }
-        .btn-warning:hover { background-color: #e67e22; }
-        
-        .input-group { margin-bottom: 15px; }
-        
-        label {
-            display: block;
-            margin-bottom: 5px;
+
+        .turn-indicator {
             font-weight: bold;
-        }
-        
-        input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
+            padding: 5px 10px;
             border-radius: 5px;
-            font-size: 1rem;
         }
-        
-        .instructions {
-            margin-top: 20px;
+        .turn-white { background: #f0d9b5; color: black; }
+        .turn-black { background: #b58863; color: white; }
+
+        .room-code-box {
+            background: #000;
             padding: 15px;
-            background-color: #fff8e1;
             border-radius: 8px;
-            border-left: 4px solid var(--warning-color);
+            text-align: center;
+            margin: 20px 0;
+            border: 2px dashed var(--highlight);
         }
-        
-        .instructions h3 { margin-bottom: 10px; color: var(--dark-color); }
-        .instructions ul { padding-right: 20px; }
-        .instructions li { margin-bottom: 8px; }
-        
-        @media (max-width: 768px) {
-            .player-status {
-                flex-direction: column;
-                gap: 15px;
-            }
+        .room-code {
+            font-family: monospace;
+            font-size: 2rem;
+            letter-spacing: 5px;
+            color: var(--highlight);
+            display: block;
+            margin: 10px 0;
         }
+
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>لعبة شطرنج أونلاين</h1>
-            <p class="subtitle">تحدي صديقك في مباراة شطرنج مباشرة</p>
-        </header>
+
+<div class="container">
+    
+    <div id="setup-page" class="page active">
+        <h1><i class="fas fa-chess-knight"></i> شطرنج المحترفين</h1>
         
-        <div id="settings-page" class="page active">
-            <h2>القائمة الرئيسية</h2>
-            
-            <div class="input-group" style="text-align: center; margin-top: 30px;">
-                <button class="btn btn-success" id="create-game" style="font-size: 1.2rem; padding: 15px 30px;">إنشاء مباراة جديدة</button>
-            </div>
-            
-            <div class="input-group" style="margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px;">
-                <label for="join-room-id">لديك رمز غرفة؟</label>
-                <div style="display: flex; gap: 10px;">
-                    <input type="text" id="join-room-id" placeholder="أدخل رقم الغرفة هنا">
-                    <button class="btn" id="join-game">انضم للمباراة</button>
+        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+            <h3>أنشئ مباراة جديدة</h3>
+            <label>اختر نظام الوقت:</label>
+            <div class="time-options">
+                <div class="time-option selected" onclick="selectTime(1)" id="t-1">
+                    <i class="fas fa-bolt"></i>
+                    1 دقيقة (Bullet)
+                </div>
+                <div class="time-option" onclick="selectTime(5)" id="t-5">
+                    <i class="fas fa-stopwatch"></i>
+                    5 دقائق (Blitz)
+                </div>
+                <div class="time-option" onclick="selectTime(10)" id="t-10">
+                    <i class="fas fa-clock"></i>
+                    10 دقائق (Rapid)
+                </div>
+                <div class="time-option" onclick="showCustomTime()" id="t-custom">
+                    <i class="fas fa-cog"></i>
+                    وقت مخصص
                 </div>
             </div>
             
-            <div class="instructions">
-                <h3>كيفية اللعب:</h3>
-                <ul>
-                    <li>أنشئ غرفة جديدة أو انضم إلى غرفة موجودة</li>
-                    <li>شارك رابط الغرفة مع صديقك</li>
-                    <li>ابدأ اللعب عندما ينضم اللاعب الثاني</li>
-                </ul>
+            <div id="custom-time-input" style="display:none;">
+                <input type="number" id="custom-minutes" placeholder="أدخل عدد الدقائق" min="1" max="60">
             </div>
+
+            <button class="btn" onclick="createGame()">إنشاء الغرفة</button>
         </div>
-        
-        <div id="waiting-page" class="page">
-            <div class="waiting-room">
-                <h2>🕒 في انتظار اللاعب الثاني</h2>
-                <p>شارك رابط الغرفة مع صديقك للبدء</p>
-                
-                <div class="room-info">
-                    <span>رقم الغرفة:</span>
-                    <span class="room-id" id="room-id"></span>
-                    <button class="btn" id="copy-room-id">نسخ الرابط</button>
-                </div>
-                
-                <div class="player-status">
-                    <div class="player connected" id="player1">
-                        <h3>اللاعب 1</h3>
-                        <p>⚪ أبيض</p>
-                        <p>🟢 متصل</p>
-                    </div>
-                    <div class="player" id="player2">
-                        <h3>اللاعب 2</h3>
-                        <p>⚫ أسود</p>
-                        <p>🔴 في الانتظار</p>
-                    </div>
-                </div>
-                
-                <div class="timer" id="waiting-timer">--:--</div>
-                
-                <button class="btn btn-warning" id="cancel-waiting">إلغاء والعودة</button>
-            </div>
-        </div>
-        
-        <div id="game-page" class="page">
-            <h2>🎯 جاري اللعب</h2>
-            
-            <div class="room-info">
-                <span>رقم الغرفة:</span>
-                <span class="room-id" id="game-room-id"></span>
-                <span id="player-color"></span>
-            </div>
-            
-            <div id="board"></div>
-            
-            <div class="game-info">
-                <div class="status" id="game-status">جاهز للعب</div>
-                <div class="timer" id="game-timer">30:00</div>
-                <div class="moves" id="moves-count">الحركات: 0</div>
-            </div>
-            
-            <button class="btn btn-warning" id="leave-game">إنهاء اللعبة</button>
+
+        <div style="border-top: 1px solid #333; padding-top: 20px;">
+            <h3>أو انضم لصديق</h3>
+            <input type="text" id="join-code" placeholder="أدخل كود الغرفة">
+            <button class="btn" onclick="joinGame()">انضمام</button>
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
-    <script src="https://unpkg.com/@chrisoakman/chessboard2@0.5.0/dist/chessboard2.min.js"></script>
-    
-    <script>
-        // === إعدادات Firebase الخاصة بك (تم تثبيتها هنا) ===
-        const firebaseConfig = {
-            apiKey: "AIzaSyBvWGwTwzWztUystFa_PiASBM1_zKYljgE",
-            authDomain: "gunter-9588f.firebaseapp.com",
-            projectId: "gunter-9588f",
-            storageBucket: "gunter-9588f.appspot.com",
-            databaseURL: "https://gunter-9588f-default-rtdb.europe-west1.firebasedatabase.app"
+    <div id="waiting-page" class="page">
+        <h2>في انتظار الخصم...</h2>
+        <div class="room-code-box">
+            <span>كود الغرفة:</span>
+            <span class="room-code" id="display-code">------</span>
+            <button class="btn" onclick="copyCode()" style="font-size: 0.9rem; padding: 5px;">نسخ الكود</button>
+        </div>
+        <p style="text-align: center;">شارك الكود مع صديقك ليبدأ التحدي!</p>
+        <button class="btn btn-danger" onclick="location.reload()">إلغاء</button>
+    </div>
+
+    <div id="game-page" class="page">
+        <div class="game-header">
+            <div class="player-info">
+                <i class="fas fa-user"></i> <span id="opponent-name">الخصم</span>
+            </div>
+            <div class="timer" id="timer-opponent">00:00</div>
+        </div>
+
+        <div id="board"></div>
+
+        <div class="game-header">
+            <div class="player-info">
+                <i class="fas fa-user-circle"></i> <span id="my-name">أنت</span> (<span id="my-color-text"></span>)
+            </div>
+            <div class="timer" id="timer-self">00:00</div>
+        </div>
+
+        <div id="status-message" style="text-align: center; margin-top: 10px; font-weight: bold;"></div>
+        <button class="btn btn-danger" onclick="leaveGame()">انسحاب / خروج</button>
+    </div>
+
+</div>
+
+<script>
+    // --- تهيئة Firebase ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyBvWGwTwzWztUystFa_PiASBM1_zKYljgE",
+        authDomain: "gunter-9588f.firebaseapp.com",
+        projectId: "gunter-9588f",
+        storageBucket: "gunter-9588f.appspot.com",
+        databaseURL: "https://gunter-9588f-default-rtdb.europe-west1.firebasedatabase.app"
+    };
+
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // --- متغيرات اللعبة ---
+    let game = new Chess();
+    let board = null;
+    let roomId = null;
+    let myColor = 'white';
+    let selectedTime = 1; // الافتراضي دقيقة واحدة
+    let timers = { white: 0, black: 0 };
+    let timerInterval = null;
+    let isGameOver = false;
+
+    // --- منطق اختيار الوقت ---
+    function selectTime(minutes) {
+        selectedTime = minutes;
+        document.querySelectorAll('.time-option').forEach(el => el.classList.remove('selected'));
+        document.getElementById('t-' + minutes).classList.add('selected');
+        document.getElementById('custom-time-input').style.display = 'none';
+    }
+
+    function showCustomTime() {
+        document.querySelectorAll('.time-option').forEach(el => el.classList.remove('selected'));
+        document.getElementById('t-custom').classList.add('selected');
+        document.getElementById('custom-time-input').style.display = 'block';
+    }
+
+    // --- إنشاء اللعبة ---
+    function createGame() {
+        // التحقق من الوقت المخصص
+        if (document.getElementById('t-custom').classList.contains('selected')) {
+            const customVal = parseInt(document.getElementById('custom-minutes').value);
+            if (!customVal || customVal <= 0) return alert('الرجاء إدخال وقت صحيح');
+            selectedTime = customVal;
+        }
+
+        roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
+        myColor = 'white';
+        
+        const gameData = {
+            fen: game.fen(),
+            pgn: '',
+            turn: 'white',
+            timeControl: selectedTime * 60, // تحويل لثواني
+            timers: { white: selectedTime * 60, black: selectedTime * 60 },
+            lastMoveTime: Date.now(),
+            status: 'waiting',
+            players: { white: true, black: false }
         };
 
-        // تهيئة Firebase مرة واحدة فقط
-        if (!firebase.apps.length) {
-            try {
-                firebase.initializeApp(firebaseConfig);
-                console.log("تم الاتصال بـ Firebase بنجاح");
-            } catch (err) {
-                console.error("خطأ في التهيئة:", err);
-                alert("خطأ في الاتصال بالخادم: " + err.message);
+        db.ref('rooms/' + roomId).set(gameData);
+        
+        listenToGame();
+        
+        document.getElementById('display-code').innerText = roomId;
+        showPage('waiting-page');
+    }
+
+    // --- الانضمام ---
+    function joinGame() {
+        const code = document.getElementById('join-code').value.toUpperCase().trim();
+        if (!code) return alert("أدخل الكود");
+
+        db.ref('rooms/' + code).once('value', snapshot => {
+            if (!snapshot.exists()) return alert("الغرفة غير موجودة");
+            const data = snapshot.val();
+            if (data.players.black) return alert("الغرفة ممتلئة");
+
+            roomId = code;
+            myColor = 'black';
+            
+            // تحديث حالة الغرفة لتبدأ اللعبة
+            db.ref('rooms/' + roomId).update({
+                'players/black': true,
+                'status': 'active',
+                'lastMoveTime': Date.now() // بدء حساب الوقت
+            });
+
+            listenToGame();
+        });
+    }
+
+    // --- الاستماع لتحديثات Firebase ---
+    function listenToGame() {
+        db.ref('rooms/' + roomId).on('value', snapshot => {
+            const data = snapshot.val();
+            if (!data) return;
+
+            // إذا انضم الخصم وأنا في الانتظار
+            if (data.status === 'active' && document.getElementById('waiting-page').classList.contains('active')) {
+                startGameUI(data);
             }
-        }
-        const database = firebase.database();
 
-        // متغيرات اللعبة
-        let game = new Chess();
-        let board = null;
-        let roomId = null;
-        let playerColor = 'white';
-        let gameOver = false;
-        let waitingTimer = null;
-        let gameTimer = null;
-        let timeLeft = 30 * 60;
-
-        // عناصر الصفحات
-        const settingsPage = document.getElementById('settings-page');
-        const waitingPage = document.getElementById('waiting-page');
-        const gamePage = document.getElementById('game-page');
-
-        function showPage(page) {
-            settingsPage.classList.remove('active');
-            waitingPage.classList.remove('active');
-            gamePage.classList.remove('active');
-            page.classList.add('active');
-        }
-
-        // إنشاء غرفة جديدة
-        document.getElementById('create-game').addEventListener('click', function() {
-            roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
-            playerColor = 'white';
-            game = new Chess();
-            
-            document.getElementById('room-id').textContent = roomId;
-            document.getElementById('game-room-id').textContent = roomId;
-            document.getElementById('player-color').textContent = '⚪ أنت الأبيض';
-            
-            showPage(waitingPage);
-            startWaitingTimer();
-            
-            const newUrl = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
-            window.history.pushState({}, '', newUrl);
-            
-            const roomRef = database.ref('rooms/' + roomId);
-            roomRef.set({
-                fen: game.fen(),
-                pgn: game.pgn(),
-                turn: 'white',
-                players: { white: true, black: false },
-                status: 'waiting',
-                created: Date.now()
-            });
-            
-            roomRef.on('value', function(snapshot) {
-                const roomData = snapshot.val();
-                if (roomData) {
-                    if (roomData.players && roomData.players.black && roomData.status === 'active') {
-                        startGame();
-                    }
-                    updatePlayersStatus(roomData.players);
-                }
-            });
-        });
-
-        // الانضمام إلى غرفة
-        document.getElementById('join-game').addEventListener('click', function() {
-            const joinRoomId = document.getElementById('join-room-id').value.trim();
-            if (!joinRoomId) { alert('يرجى إدخال رقم الغرفة'); return; }
-            
-            roomId = joinRoomId;
-            playerColor = 'black';
-            game = new Chess();
-            
-            const roomRef = database.ref('rooms/' + roomId);
-            roomRef.once('value').then(function(snapshot) {
-                if (!snapshot.exists()) { alert('الغرفة غير موجودة!'); return; }
-                const roomData = snapshot.val();
-                
-                if (roomData.players && roomData.players.black) { alert('الغرفة ممتلئة!'); return; }
-                
-                document.getElementById('room-id').textContent = roomId;
-                document.getElementById('game-room-id').textContent = roomId;
-                document.getElementById('player-color').textContent = '⚫ أنت الأسود';
-                
-                showPage(waitingPage);
-                startWaitingTimer();
-                
-                roomRef.update({ 'players/black': true, 'status': 'active' });
-                
-                roomRef.on('value', function(snapshot) {
-                    const updatedRoomData = snapshot.val();
-                    if (updatedRoomData && updatedRoomData.status === 'active') {
-                        game.load(updatedRoomData.fen);
-                        startGame();
-                    }
-                    updatePlayersStatus(updatedRoomData.players);
-                });
-            });
-        });
-
-        function startGame() {
-            clearInterval(waitingTimer);
-            showPage(gamePage);
-            initializeBoard();
-            startGameTimer();
-            updateStatus();
-        }
-
-        function updatePlayersStatus(players) {
-            const player2 = document.getElementById('player2');
-            if (players && players.black) {
-                player2.classList.add('connected');
-                player2.querySelector('p:last-child').textContent = '🟢 متصل';
+            // تحديث اللوحة إذا حدثت حركة جديدة من الخصم
+            if (game.fen() !== data.fen) {
+                game.load(data.fen);
+                board.position(data.fen);
+                updateStatus(data.turn);
+                // تشغيل صوت حركة (اختياري)
             }
-        }
+            
+            // مزامنة الوقت
+            timers = data.timers;
+            updateTimerDisplay();
+        });
+    }
 
-        function startWaitingTimer() {
-            let seconds = 0;
-            clearInterval(waitingTimer);
-            waitingTimer = setInterval(() => {
-                seconds++;
-                const minutes = Math.floor(seconds / 60);
-                const secs = seconds % 60;
-                document.getElementById('waiting-timer').textContent = 
-                    `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-            }, 1000);
-        }
+    function startGameUI(data) {
+        showPage('game-page');
+        document.getElementById('my-color-text').innerText = myColor === 'white' ? 'أبيض' : 'أسود';
+        document.getElementById('my-color-text').className = myColor === 'white' ? 'turn-white' : 'turn-black';
+        
+        // إعداد المؤقتات الأولية
+        timers = data.timers;
+        
+        // بدء المؤقت المحلي
+        startTimerInterval();
 
-        function startGameTimer() {
-            timeLeft = 30 * 60;
-            clearInterval(gameTimer);
-            gameTimer = setInterval(() => {
-                if (timeLeft <= 0) {
-                    clearInterval(gameTimer);
-                    gameOver = true;
-                    document.getElementById('game-status').textContent = 'انتهى الوقت!';
-                    return;
-                }
-                timeLeft--;
-                const minutes = Math.floor(timeLeft / 60);
-                const seconds = timeLeft % 60;
-                document.getElementById('game-timer').textContent = 
-                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            }, 1000);
-        }
+        // إعداد اللوحة
+        const config = {
+            draggable: true,
+            position: 'start',
+            orientation: myColor,
+            moveSpeed: 'fast', // حركة سلسة وسريعة
+            snapbackSpeed: 50,
+            snapSpeed: 50,
+            onDragStart: onDragStart,
+            onDrop: onDrop,
+            onSnapEnd: () => board.position(game.fen())
+        };
+        board = Chessboard2('board', config);
+        
+        // التعامل مع تغير حجم الشاشة
+        window.onresize = board.resize;
+    }
 
-        document.getElementById('copy-room-id').addEventListener('click', function() {
-            const roomLink = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
-            navigator.clipboard.writeText(roomLink).then(() => alert('تم النسخ!'));
+    // --- منطق اللعبة (Chess Logic) ---
+    
+    function onDragStart(source, piece) {
+        if (isGameOver) return false;
+        // منع تحريك قطع الخصم
+        if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
+            (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
+            return false;
+        }
+        // منع التحريك إذا لم يكن دورك
+        if ((game.turn() === 'w' && myColor === 'black') ||
+            (game.turn() === 'b' && myColor === 'white')) {
+            return false;
+        }
+    }
+
+    function onDrop(source, target) {
+        // التحقق من قانونية الحركة محلياً أولاً لسرعة الاستجابة
+        const move = game.move({
+            from: source,
+            to: target,
+            promotion: 'q' // ترقية تلقائية للوزير للسرعة
         });
 
-        document.getElementById('cancel-waiting').addEventListener('click', function() {
-            clearInterval(waitingTimer);
-            if (roomId) database.ref('rooms/' + roomId).remove();
-            showPage(settingsPage);
+        if (move === null) return 'snapback'; // حركة غير قانونية تعود مكانها
+
+        // إذا الحركة صحيحة، أرسلها للسيرفر
+        const now = Date.now();
+        const timeSpent = Math.floor((now - lastTickTime) / 1000); // حساب تقريبي (السيرفر أدق لكن هذا مؤقت)
+        
+        // نقوم بتحديث السيرفر
+        db.ref('rooms/' + roomId).transaction(currentData => {
+            if (currentData) {
+                // تحديث وقت اللاعب الذي لعب للتو
+                const colorJustPlayed = move.color === 'w' ? 'white' : 'black';
+                
+                // حساب دقيق للوقت المتبقي بناءً على الفارق الزمني الحقيقي
+                const timeDiff = Math.floor((Date.now() - currentData.lastMoveTime) / 1000);
+                const newTime = Math.max(0, currentData.timers[colorJustPlayed] - timeDiff);
+                
+                return {
+                    ...currentData,
+                    fen: game.fen(),
+                    turn: game.turn() === 'w' ? 'white' : 'black',
+                    lastMoveTime: Date.now(),
+                    timers: {
+                        ...currentData.timers,
+                        [colorJustPlayed]: newTime
+                    }
+                };
+            }
         });
 
-        document.getElementById('leave-game').addEventListener('click', function() {
-            clearInterval(gameTimer);
-            if (roomId) database.ref('rooms/' + roomId).remove();
-            showPage(settingsPage);
-        });
+        updateStatus(game.turn());
+    }
 
-        function initializeBoard() {
-            const config = {
-                draggable: true,
-                position: game.fen(),
-                onDragStart: onDragStart,
-                onDrop: onDrop,
-                onSnapEnd: onSnapEnd,
-                orientation: playerColor
-            };
-            board = Chessboard2('board', config);
-        }
-
-        function onDragStart(source, piece) {
-            if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
-                (game.turn() === 'b' && piece.search(/^w/) !== -1)) return false;
-            if ((playerColor === 'white' && game.turn() === 'b') ||
-                (playerColor === 'black' && game.turn() === 'w')) return false;
-            if (gameOver) return false;
-        }
-
-        function onDrop(source, target) {
-            const move = game.move({ from: source, to: target, promotion: 'q' });
-            if (move === null) return 'snapback';
-            updateGameInFirebase();
-            updateStatus();
-            document.getElementById('moves-count').textContent = `الحركات: ${game.history().length}`;
-        }
-
-        function onSnapEnd() { board.position(game.fen()); }
-
-        function updateGameInFirebase() {
-            if (!roomId) return;
-            database.ref('rooms/' + roomId).update({
-                fen: game.fen(),
-                pgn: game.pgn(),
-                turn: game.turn(),
-                lastMove: game.history({verbose: true}).slice(-1)[0]
-            });
-        }
-
-        function updateStatus() {
-            let status = '';
-            let moveColor = game.turn() === 'b' ? 'أسود' : 'أبيض';
-            if (game.in_checkmate()) {
-                status = 'مات! الفائز: ' + (moveColor === 'أبيض' ? 'الأسود' : 'الأبيض');
-                gameOver = true;
-                clearInterval(gameTimer);
-            } else if (game.in_draw()) {
-                status = 'تعادل!';
-                gameOver = true;
-                clearInterval(gameTimer);
+    // --- نظام التوقيت ---
+    let lastTickTime = Date.now();
+    
+    function startTimerInterval() {
+        if (timerInterval) clearInterval(timerInterval);
+        
+        timerInterval = setInterval(() => {
+            if (isGameOver) return;
+            
+            // نعرف دور من الآن
+            const activeColor = game.turn() === 'w' ? 'white' : 'black';
+            
+            // نخصم ثانية من اللاعب الحالي محلياً للعرض فقط
+            if (timers[activeColor] > 0) {
+                timers[activeColor]--;
+                updateTimerDisplay();
             } else {
-                status = 'دور ' + moveColor;
-                if (game.in_check()) status += ' (كش!)';
+                // انتهى الوقت!
+                handleTimeOut(activeColor);
             }
-            document.getElementById('game-status').textContent = status;
-        }
+        }, 1000);
+    }
 
-        window.addEventListener('DOMContentLoaded', function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const roomParam = urlParams.get('room');
-            if (roomParam) {
-                document.getElementById('join-room-id').value = roomParam;
-            }
-        });
-    </script>
+    function updateTimerDisplay() {
+        // تنسيق الوقت MM:SS
+        const format = (s) => {
+            const m = Math.floor(s / 60);
+            const sec = Math.floor(s % 60);
+            return `${m}:${sec.toString().padStart(2, '0')}`;
+        };
+
+        const myTime = timers[myColor];
+        const oppTime = timers[myColor === 'white' ? 'black' : 'white'];
+        
+        document.getElementById('timer-self').innerText = format(myTime);
+        document.getElementById('timer-opponent').innerText = format(oppTime);
+
+        // تنبيه لوني إذا انخفض الوقت
+        if (myTime < 10) document.getElementById('timer-self').style.color = 'red';
+        else document.getElementById('timer-self').style.color = 'white';
+    }
+
+    function handleTimeOut(losingColor) {
+        clearInterval(timerInterval);
+        isGameOver = true;
+        const msg = losingColor === myColor ? "انتهى وقتك! لقد خسرت." : "انتهى وقت الخصم! لقد فزت.";
+        document.getElementById('status-message').innerText = msg;
+        alert(msg);
+    }
+
+    function updateStatus(turn) {
+        let status = '';
+        if (game.in_checkmate()) {
+            status = 'كش مات! انتهت اللعبة.';
+            isGameOver = true;
+            clearInterval(timerInterval);
+        } else if (game.in_draw()) {
+            status = 'تعادل!';
+            isGameOver = true;
+            clearInterval(timerInterval);
+        } else {
+            if (game.in_check()) status = 'كش ملك!';
+            else status = (turn === 'white' ? 'دور الأبيض' : 'دور الأسود');
+        }
+        document.getElementById('status-message').innerText = status;
+    }
+
+    // --- أدوات مساعدة ---
+    function showPage(pageId) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(pageId).classList.add('active');
+    }
+
+    function copyCode() {
+        navigator.clipboard.writeText(roomId);
+        alert("تم نسخ الكود: " + roomId);
+    }
+
+    function leaveGame() {
+        if(confirm("هل أنت متأكد من الخروج؟")) {
+            location.reload();
+        }
+    }
+</script>
 </body>
 </html>
