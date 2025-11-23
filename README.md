@@ -8,12 +8,6 @@
 - واجهة متجاوبة
 - حركات قانونية فقط
 
-## كيفية الاستخدام
-1. افتح [رابط GitHub Pages](https://username.github.io/chess-game-online)
-2. أدخل بيانات Firebase
-3. أنشئ غرفة أو انضم لواحدة
-4. شارك الرابط مع صديقك
-
 ## التقنيات المستخدمة
 - HTML, CSS, JavaScript
 - Chessboard.js
