@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة شطرنج أونلاين - 1v1</title>
+    <!-- تضمين مكتبة chessboard.js -->
+    <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboard2@0.5.0/dist/chessboard2.min.css">
+    <!-- تضمين Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: var(--dark-color);
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px 0;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .chess-section {
+            flex: 1;
+            min-width: 300px;
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .controls-section {
+            flex: 0 0 300px;
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        #board {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .game-info {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--light-color);
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .status {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .room-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #e8f4fd;
+            border-radius: 8px;
+        }
+        
+        .room-id {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+            text-align: center;
+            margin: 5px;
+        }
+        
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+        }
+        
+        .btn-success:hover {
+            background-color: #27ae60;
+        }
+        
+        .btn-warning {
+            background-color: var(--warning-color);
+        }
+        
+        .btn-warning:hover {
+            background-color: #e67e22;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        
+        .firebase-config {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 4px solid var(--secondary-color);
+        }
+        
+        .firebase-config h3 {
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+        
+        .instructions {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #fff8e1;
+            border-radius: 8px;
+            border-left: 4px solid var(--warning-color);
+        }
+        
+        .instructions h3 {
+            margin-bottom: 10px;
+            color: var(--dark-color);
+        }
+        
+        .instructions ul {
+            padding-right: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .controls-section {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>لعبة شطرنج أونلاين</h1>
+            <p class="subtitle">تحدي صديقك في مباراة شطرنج مباشرة</p>
+        </header>
+        
+        <div class="main-content">
+            <section class="chess-section">
+                <div id="board"></div>
+                <div class="game-info">
+                    <div class="status" id="game-status">جاهز للعب</div>
+                    <div class="room-info" id="room-info" style="display: none;">
+                        <span>رقم الغرفة:</span>
+                        <span class="room-id" id="room-id"></span>
+                        <button class="btn" id="copy-room-id">نسخ الرابط</button>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="controls-section">
+                <h2>إدارة اللعبة</h2>
+                
+                <div class="input-group">
+                    <button class="btn btn-success" id="create-game">إنشاء مباراة جديدة</button>
+                </div>
+                
+                <div class="input-group">
+                    <label for="join-room-id">الانضمام إلى مباراة:</label>
+                    <input type="text" id="join-room-id" placeholder="أدخل رقم الغرفة">
+                    <button class="btn" id="join-game">انضم إلى المباراة</button>
+                </div>
+                
+                <div class="firebase-config">
+                    <h3>إعدادات Firebase</h3>
+                    <p>لتفعيل المزامنة عبر الإنترنت، أدخل بيانات التكوين الخاصة بـ Firebase:</p>
+                    
+                    <div class="input-group">
+                        <label for="api-key">API Key:</label>
+                        <input type="text" id="api-key" placeholder="أدخل API Key">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="project-id">Project ID:</label>
+                        <input type="text" id="project-id" placeholder="أدخل Project ID">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="database-url">Database URL:</label>
+                        <input type="text" id="database-url" placeholder="أدخل Database URL">
+                    </div>
+                    
+                    <button class="btn btn-warning" id="save-config">حفظ الإعدادات</button>
+                </div>
+                
+                <div class="instructions">
+                    <h3>كيفية اللعب:</h3>
+                    <ul>
+                        <li>أنشئ غرفة جديدة أو انضم إلى غرفة موجودة</li>
+                        <li>شارك رابط الغرفة مع صديقك</li>
+                        <li>ابدأ اللعب! الحركات ستتزامن تلقائياً بين اللاعبين</li>
+                        <li>يمكنك نسخ رابط الغرفة من قسم معلومات الغرفة</li>
+                    </ul>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- تضمين مكتبات JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <script src="https://unpkg.com/@chrisoakman/chessboard2@0.5.0/dist/chessboard2.min.js"></script>
+    
+    <script>
+        // متغيرات عامة
+        let game = new Chess();
+        let board = null;
+        let roomId = null;
+        let playerColor = 'white'; // اللون الافتراضي للاعب الحالي
+        let database = null;
+        let gameOver = false;
+
+        // تهيئة Firebase
+        function initializeFirebase() {
+            // محاولة تحميل الإعدادات من localStorage
+            const apiKey = localStorage.getItem('chess-apiKey') || document.getElementById('api-key').value;
+            const projectId = localStorage.getItem('chess-projectId') || document.getElementById('project-id').value;
+            const databaseURL = localStorage.getItem('chess-databaseURL') || document.getElementById('database-url').value;
+            
+            // إذا لم تكن هناك إعدادات، نطلب من المستخدم إدخالها
+            if (!apiKey || !projectId || !databaseURL) {
+                alert('يرجى إدخال بيانات تكوين Firebase أولاً');
+                return null;
+            }
+            
+            // تحديث الحقول بقيم localStorage
+            document.getElementById('api-key').value = apiKey;
+            document.getElementById('project-id').value = projectId;
+            document.getElementById('database-url').value = databaseURL;
+            
+            try {
+                const firebaseConfig = {
+                    apiKey: apiKey,
+                    authDomain: `${projectId}.firebaseapp.com`,
+                    projectId: projectId,
+                    databaseURL: databaseURL,
+                    storageBucket: `${projectId}.appspot.com`,
+                    messagingSenderId: '000000000000', // يمكن تركها افتراضية
+                    appId: '1:000000000000:web:0000000000000000000000' // يمكن تركها افتراضية
+                };
+                
+                // تهيئة Firebase
+                firebase.initializeApp(firebaseConfig);
+                return firebase.database();
+            } catch (error) {
+                console.error('خطأ في تهيئة Firebase:', error);
+                alert('حدث خطأ في تهيئة Firebase. يرجى التحقق من بيانات التكوين.');
+                return null;
+            }
+        }
+
+        // حفظ إعدادات Firebase
+        document.getElementById('save-config').addEventListener('click', function() {
+            const apiKey = document.getElementById('api-key').value;
+            const projectId = document.getElementById('project-id').value;
+            const databaseURL = document.getElementById('database-url').value;
+            
+            if (!apiKey || !projectId || !databaseURL) {
+                alert('يرجى ملء جميع حقول إعدادات Firebase');
+                return;
+            }
+            
+            localStorage.setItem('chess-apiKey', apiKey);
+            localStorage.setItem('chess-projectId', projectId);
+            localStorage.setItem('chess-databaseURL', databaseURL);
+            
+            alert('تم حفظ إعدادات Firebase بنجاح!');
+            
+            // إعادة تهيئة Firebase بالإعدادات الجديدة
+            database = initializeFirebase();
+        });
+
+        // إنشاء غرفة جديدة
+        document.getElementById('create-game').addEventListener('click', function() {
+            if (!database) {
+                database = initializeFirebase();
+                if (!database) return;
+            }
+            
+            // إنشاء معرف غرفة عشوائي
+            roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
+            playerColor = 'white';
+            
+            // إعادة تعيين اللعبة
+            game = new Chess();
+            updateStatus();
+            
+            // إظهار معلومات الغرفة
+            document.getElementById('room-info').style.display = 'flex';
+            document.getElementById('room-id').textContent = roomId;
+            
+            // تحديث الرابط في المتصفح
+            const newUrl = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
+            window.history.pushState({}, '', newUrl);
+            
+            // إنشاء غرفة في Firebase
+            const roomRef = database.ref('rooms/' + roomId);
+            roomRef.set({
+                fen: game.fen(),
+                pgn: game.pgn(),
+                turn: 'white',
+                players: {
+                    white: true,
+                    black: false
+                },
+                lastMove: null,
+                status: 'active'
+            });
+            
+            // الاستماع للتغييرات في الغرفة
+            roomRef.on('value', function(snapshot) {
+                const roomData = snapshot.val();
+                if (roomData) {
+                    // تحديث اللعبة من حالة Firebase
+                    if (roomData.fen !== game.fen()) {
+                        game.load(roomData.fen);
+                        board.position(game.fen());
+                        updateStatus();
+                    }
+                    
+                    // تحديث دور اللاعب
+                    if (roomData.turn !== game.turn()) {
+                        updateStatus();
+                    }
+                }
+            });
+            
+            // تهيئة اللوحة
+            initializeBoard();
+        });
+
+        // الانضمام إلى غرفة موجودة
+        document.getElementById('join-game').addEventListener('click', function() {
+            const joinRoomId = document.getElementById('join-room-id').value.trim();
+            if (!joinRoomId) {
+                alert('يرجى إدخال رقم الغرفة');
+                return;
+            }
+            
+            if (!database) {
+                database = initializeFirebase();
+                if (!database) return;
+            }
+            
+            roomId = joinRoomId;
+            playerColor = 'black';
+            
+            // إعادة تعيين اللعبة
+            game = new Chess();
+            
+            // إظهار معلومات الغرفة
+            document.getElementById('room-info').style.display = 'flex';
+            document.getElementById('room-id').textContent = roomId;
+            
+            // تحديث الرابط في المتصفح
+            const newUrl = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
+            window.history.pushState({}, '', newUrl);
+            
+            // الانضمام إلى الغرفة في Firebase
+            const roomRef = database.ref('rooms/' + roomId);
+            roomRef.once('value').then(function(snapshot) {
+                if (!snapshot.exists()) {
+                    alert('الغرفة غير موجودة!');
+                    document.getElementById('room-info').style.display = 'none';
+                    roomId = null;
+                    return;
+                }
+                
+                const roomData = snapshot.val();
+                
+                // التحقق مما إذا كانت الغرفة ممتلئة
+                if (roomData.players && roomData.players.black) {
+                    alert('الغرفة ممتلئة بالفعل!');
+                    document.getElementById('room-info').style.display = 'none';
+                    roomId = null;
+                    return;
+                }
+                
+                // تحديث حالة اللاعبين
+                roomRef.update({
+                    'players/black': true
+                });
+                
+                // تحميل حالة اللعبة
+                game.load(roomData.fen);
+                
+                // الاستماع للتغييرات في الغرفة
+                roomRef.on('value', function(snapshot) {
+                    const updatedRoomData = snapshot.val();
+                    if (updatedRoomData) {
+                        // تحديث اللعبة من حالة Firebase
+                        if (updatedRoomData.fen !== game.fen()) {
+                            game.load(updatedRoomData.fen);
+                            board.position(game.fen());
+                            updateStatus();
+                        }
+                        
+                        // تحديث دور اللاعب
+                        if (updatedRoomData.turn !== game.turn()) {
+                            updateStatus();
+                        }
+                    }
+                });
+                
+                // تهيئة اللوحة
+                initializeBoard();
+                updateStatus();
+            });
+        });
+
+        // نسخ رابط الغرفة
+        document.getElementById('copy-room-id').addEventListener('click', function() {
+            const roomLink = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
+            navigator.clipboard.writeText(roomLink).then(function() {
+                alert('تم نسخ رابط الغرفة إلى الحافظة!');
+            });
+        });
+
+        // تهيئة لوحة الشطرنج
+        function initializeBoard() {
+            const config = {
+                draggable: true,
+                position: 'start',
+                onDragStart: onDragStart,
+                onDrop: onDrop,
+                onSnapEnd: onSnapEnd,
+                orientation: playerColor // اتجاه اللوحة حسب لون اللاعب
+            };
+            
+            board = Chessboard2('board', config);
+            updateStatus();
+        }
+
+        // التحقق من إمكانية سحب القطعة
+        function onDragStart(source, piece, position, orientation) {
+            // منع اللاعب من تحريك قطع الخصم
+            if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
+                (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
+                return false;
+            }
+            
+            // منع اللاعب من التحرك إذا لم يكن دوره
+            if ((playerColor === 'white' && game.turn() === 'b') ||
+                (playerColor === 'black' && game.turn() === 'w')) {
+                return false;
+            }
+            
+            // إذا انتهت اللعبة، لا تسمح بأي حركة
+            if (gameOver) {
+                return false;
+            }
+        }
+
+        // معالجة إسقاط القطعة
+        function onDrop(source, target) {
+            // محاولة تنفيذ الحركة
+            const move = game.move({
+                from: source,
+                to: target,
+                promotion: 'q' // الترقية إلى وزير بشكل افتراضي
+            });
+            
+            // إذا كانت الحركة غير قانونية، إلغاؤها
+            if (move === null) return 'snapback';
+            
+            // تحديث حالة اللعبة في Firebase
+            updateGameInFirebase();
+            
+            updateStatus();
+        }
+
+        // بعد انتهاء الحركة
+        function onSnapEnd() {
+            board.position(game.fen());
+        }
+
+        // تحديث حالة اللعبة في Firebase
+        function updateGameInFirebase() {
+            if (!roomId || !database) return;
+            
+            const roomRef = database.ref('rooms/' + roomId);
+            roomRef.update({
+                fen: game.fen(),
+                pgn: game.pgn(),
+                turn: game.turn(),
+                lastMove: {
+                    from: game.history({verbose: true}).slice(-1)[0].from,
+                    to: game.history({verbose: true}).slice(-1)[0].to
+                }
+            });
+        }
+
+        // تحديث حالة اللعبة وعرضها
+        function updateStatus() {
+            let status = '';
+            
+            let moveColor = 'أبيض';
+            if (game.turn() === 'b') {
+                moveColor = 'أسود';
+            }
+            
+            // التحقق من حالة اللعبة
+            if (game.in_checkmate()) {
+                status = 'انتهت اللعبة، ' + moveColor + ' في كش مات!';
+                gameOver = true;
+            } else if (game.in_draw()) {
+                status = 'انتهت اللعبة بالتعادل!';
+                gameOver = true;
+            } else {
+                status = 'دور ' + moveColor;
+                if (game.in_check()) {
+                    status += ', ' + moveColor + ' في كش';
+                }
+                gameOver = false;
+            }
+            
+            // عرض حالة اللعبة
+            document.getElementById('game-status').textContent = status;
+            
+            // تحديث إمكانية السحب حسب دور اللاعب
+            if (board) {
+                if ((playerColor === 'white' && game.turn() === 'w') ||
+                    (playerColor === 'black' && game.turn() === 'b')) {
+                    // تفعيل السحب إذا كان دور اللاعب
+                    board.set({
+                        draggable: true
+                    });
+                } else {
+                    // تعطيل السحب إذا لم يكن دور اللاعب
+                    board.set({
+                        draggable: false
+                    });
+                }
+            }
+        }
+
+        // الانضمام التلقائي عند فتح الرابط مع ?room=
+        function checkUrlForRoom() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const roomParam = urlParams.get('room');
+            
+            if (roomParam) {
+                document.getElementById('join-room-id').value = roomParam;
+                // محاولة الانضمام إلى الغرفة بعد تهيئة Firebase
+                setTimeout(() => {
+                    document.getElementById('join-game').click();
+                }, 500);
+            }
+        }
+
+        // تهيئة الصفحة عند التحميل
+        window.addEventListener('DOMContentLoaded', function() {
+            // محاولة تحميل إعدادات Firebase من localStorage
+            const savedApiKey = localStorage.getItem('chess-apiKey');
+            const savedProjectId = localStorage.getItem('chess-projectId');
+            const savedDatabaseURL = localStorage.getItem('chess-databaseURL');
+            
+            if (savedApiKey && savedProjectId && savedDatabaseURL) {
+                document.getElementById('api-key').value = savedApiKey;
+                document.getElementById('project-id').value = savedProjectId;
+                document.getElementById('database-url').value = savedDatabaseURL;
+                
+                // تهيئة Firebase بالإعدادات المحفوظة
+                database = initializeFirebase();
+                
+                // التحقق من وجود room في الرابط والانضمام التلقائي
+                checkUrlForRoom();
+            }
+            
+            // تهيئة اللوحة بشكل أساسي
+            initializeBoard();
+        });
+    </script>
+</body>
+  </html>
